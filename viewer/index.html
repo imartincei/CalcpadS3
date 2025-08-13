@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CalcpadS3 Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Light mode (default) */
+        :root {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f9f9f9;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border-color: #dddddd;
+            --accent-color: #007bff;
+            --accent-hover: #0056b3;
+            --success-bg: #d4edda;
+            --success-text: #155724;
+            --error-bg: #f8d7da;
+            --error-text: #dc3545;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-hover: rgba(0, 0, 0, 0.15);
+        }
+
+        /* Dark mode */
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --border-color: #444444;
+            --accent-color: #4dabf7;
+            --accent-hover: #339af0;
+            --success-bg: #2b5a3d;
+            --success-text: #69db7c;
+            --error-bg: #5a2d31;
+            --error-text: #ff6b6b;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-hover: rgba(0, 0, 0, 0.4);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .tab.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .tab:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .tab:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .content {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow);
+            min-height: 600px;
+            border: 1px solid var(--border-color);
+        }
+
+        .login-form {
+            max-width: 300px;
+            margin: 50px auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.2);
+        }
+
+        button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        button:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .file-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-hover);
+            border-color: var(--accent-color);
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .file-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px var(--shadow);
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tag.selected {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .error {
+            color: var(--error-text);
+            background: var(--error-bg);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid var(--error-text);
+        }
+
+        .success {
+            color: var(--success-text);
+            background: var(--success-bg);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid var(--success-text);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Dark mode toggle button */
+        .theme-toggle {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-hover);
+            transform: scale(1.1);
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Tag row styling */
+        .tag-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .delete-btn {
+            background: var(--error-text);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        /* Upload tag selection styling */
+        .upload-tag {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin: 4px;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .upload-tag:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .upload-tag-selected {
+            background: var(--accent-color) !important;
+            color: white !important;
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.3);
+            font-weight: 600;
+        }
+
+        .upload-tag-selected:hover {
+            background: var(--accent-hover) !important;
+            border-color: var(--accent-hover) !important;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.5);
+        }
+
+        /* File preview modal styling */
+        .file-details {
+            margin: 20px 0;
+        }
+
+        .detail-row {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-row strong {
+            min-width: 120px;
+            color: var(--text-secondary);
+        }
+
+        .download-button {
+            background: var(--accent-color) !important;
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .download-button:hover {
+            background: var(--accent-hover) !important;
+        }
+
+        .download-button:disabled {
+            background: var(--text-muted) !important;
+            cursor: not-allowed !important;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --border-color: #000000;
+                --text-secondary: #000000;
+            }
+            
+            [data-theme="dark"] {
+                --border-color: #ffffff;
+                --text-secondary: #ffffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <div class="header">
+            <h1>CalcpadS3 Viewer</h1>
+            <div class="user-info" v-if="isAuthenticated">
+                <span>Welcome, {{ currentUser?.username }}</span>
+                <button class="theme-toggle" @click="toggleTheme" :title="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+                    {{ isDarkMode ? '☀️' : '🌙' }}
+                </button>
+                <button @click="logout">Logout</button>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div v-if="!isAuthenticated" class="container">
+            <div style="position: absolute; top: 20px; right: 20px;">
+                <button class="theme-toggle" @click="toggleTheme" :title="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+                    {{ isDarkMode ? '☀️' : '🌙' }}
+                </button>
+            </div>
+            <div class="login-form">
+                <h2>Login</h2>
+                <div v-if="error" class="error">{{ error }}</div>
+                <form @submit.prevent="login">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input v-model="loginForm.username" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input v-model="loginForm.password" type="password" required>
+                    </div>
+                    <button type="submit" :disabled="loading">
+                        {{ loading ? 'Logging in...' : 'Login' }}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div v-if="isAuthenticated" class="container">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab" :class="{ active: activeTab === 'files' }" @click="activeTab = 'files'">
+                    Files
+                </button>
+                <button class="tab" :class="{ active: activeTab === 'tags' }" @click="activeTab = 'tags'">
+                    Tags
+                </button>
+                <button class="tab" :class="{ active: activeTab === 'users' }" @click="activeTab = 'users'" v-if="isAdmin">
+                    Users
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Files Tab -->
+                <div v-if="activeTab === 'files'">
+                    <div class="filters">
+                        <input v-model="searchQuery" placeholder="Search files..." style="flex: 1;">
+                        <button @click="showUploadModal = true" v-if="canUpload">Upload File</button>
+                        <button @click="showTagFilterModal = true">Filter Tags ({{ selectedTags.length }})</button>
+                        <button @click="refreshFiles">Refresh</button>
+                    </div>
+
+                    <div class="files-grid">
+                        <div v-for="file in filteredFiles" :key="file.fileName" class="file-card" @click="selectFile(file)">
+                            <div class="file-name">{{ file.fileName }}</div>
+                            <div class="file-meta">
+                                Size: {{ formatFileSize(file.size) }}<br>
+                                Modified: {{ formatDate(file.lastModified) }}<br>
+                                <div class="tag-list" v-if="file.tags && file.tags.length">
+                                    <span v-for="tag in file.tags" :key="tag" class="tag">{{ tag }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags Tab -->
+                <div v-if="activeTab === 'tags'">
+                    <div class="filters">
+                        <button @click="showCreateTagModal = true" v-if="isAdmin">Create Tag</button>
+                        <button @click="refreshTags">Refresh</button>
+                    </div>
+
+                    <div v-for="tag in tags" :key="tag.id" class="file-card tag-row">
+                        <div class="file-name">{{ tag.name }}</div>
+                        <button v-if="isAdmin" @click="deleteTag(tag.id)" class="delete-btn">Delete</button>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div v-if="activeTab === 'users' && isAdmin">
+                    <div class="filters">
+                        <button @click="showCreateUserModal = true">Create User</button>
+                        <button @click="refreshUsers">Refresh</button>
+                    </div>
+
+                    <div v-for="user in users" :key="user.id" class="file-card">
+                        <div class="file-name">{{ user.username }} ({{ user.email }})</div>
+                        <div class="file-meta">
+                            Role: {{ getRoleName(user.role) }}<br>
+                            Created: {{ formatDate(user.createdAt) }}<br>
+                            Active: {{ user.isActive ? 'Yes' : 'No' }}
+                        </div>
+                        <button @click="editUser(user)" style="margin-right: 10px;">Edit</button>
+                        <button @click="deleteUser(user.id)">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Modal -->
+        <div v-if="showUploadModal" class="modal" @click.self="showUploadModal = false">
+            <div class="modal-content">
+                <h3>Upload File</h3>
+                <div v-if="error" class="error">{{ error }}</div>
+                <div class="upload-area" @click="$refs.fileInput.click()">
+                    <div v-if="!uploadFile">Click to select file</div>
+                    <div v-else>{{ uploadFile.name }}</div>
+                    <input ref="fileInput" type="file" style="display: none" @change="handleFileSelect">
+                </div>
+                <div class="form-group">
+                    <label>Tags</label>
+                    <div class="tag-list">
+                        <span v-for="tag in tags" :key="tag.id" 
+                              :class="{ 'upload-tag': true, 'upload-tag-selected': uploadTags.includes(tag.name) }"
+                              @click="toggleUploadTag(tag.name)">
+                            {{ tag.name }}
+                        </span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button @click="uploadFileAction" :disabled="!uploadFile || loading">
+                        {{ loading ? 'Uploading...' : 'Upload' }}
+                    </button>
+                    <button @click="showUploadModal = false">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tag Filter Modal -->
+        <div v-if="showTagFilterModal" class="modal" @click.self="showTagFilterModal = false">
+            <div class="modal-content">
+                <h3>Filter by Tags</h3>
+                <div class="tag-list">
+                    <span v-for="tag in tags" :key="tag.id" 
+                          :class="{ tag: true, 'selected': selectedTags.includes(tag.name) }"
+                          @click="toggleTagFilter(tag.name)"
+                          style="cursor: pointer;">
+                        {{ tag.name }}
+                    </span>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button @click="showTagFilterModal = false">Done</button>
+                    <button @click="selectedTags = []">Clear All</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Tag Modal -->
+        <div v-if="showCreateTagModal" class="modal" @click.self="showCreateTagModal = false">
+            <div class="modal-content">
+                <h3>Create Tag</h3>
+                <div v-if="error" class="error">{{ error }}</div>
+                <div class="form-group">
+                    <label>Tag Name</label>
+                    <input v-model="newTagName" type="text" required>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button @click="createTag" :disabled="!newTagName || loading">
+                        {{ loading ? 'Creating...' : 'Create' }}
+                    </button>
+                    <button @click="showCreateTagModal = false">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create User Modal -->
+        <div v-if="showCreateUserModal" class="modal" @click.self="showCreateUserModal = false">
+            <div class="modal-content">
+                <h3>Create User</h3>
+                <div v-if="error" class="error">{{ error }}</div>
+                <form @submit.prevent="createUser">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input v-model="newUser.username" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input v-model="newUser.email" type="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input v-model="newUser.password" type="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select v-model="newUser.role" required>
+                            <option value="1">Viewer</option>
+                            <option value="2">Contributor</option>
+                            <option value="3">Admin</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" :disabled="loading">
+                            {{ loading ? 'Creating...' : 'Create' }}
+                        </button>
+                        <button type="button" @click="showCreateUserModal = false">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- File Preview Modal -->
+        <div v-if="showFilePreview && selectedFile" class="modal" @click.self="showFilePreview = false">
+            <div class="modal-content">
+                <h3>{{ selectedFile.fileName }}</h3>
+                <div v-if="error" class="error">{{ error }}</div>
+                
+                <div class="file-details">
+                    <div class="detail-row">
+                        <strong>Size:</strong> {{ formatFileSize(selectedFile.size) }}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Last Modified:</strong> {{ formatDate(selectedFile.lastModified) }}
+                    </div>
+                    <div class="detail-row" v-if="selectedFile.tags && selectedFile.tags.length">
+                        <strong>Tags:</strong>
+                        <div class="tag-list">
+                            <span v-for="tag in selectedFile.tags" :key="tag" class="tag">{{ tag }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button @click="downloadFile" :disabled="loading" class="download-button">
+                        {{ loading ? 'Downloading...' : 'Download File' }}
+                    </button>
+                    <button @click="showFilePreview = false">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

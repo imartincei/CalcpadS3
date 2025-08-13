@@ -1,0 +1,28 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install development tools
+RUN apk add --no-cache sqlite
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Create data directory
+RUN mkdir -p /app/data
+
+# Expose port and debug port
+EXPOSE 5000
+EXPOSE 9229
+
+# Set environment variables
+ENV NODE_ENV=development
+
+# Start the application in development mode with debugging
+CMD ["npm", "run", "dev"]
