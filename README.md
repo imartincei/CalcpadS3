@@ -206,6 +206,48 @@ The Node.js version maintains API compatibility with the original C# version. Ex
 - Environment variables use NODE_ENV instead of ASPNETCORE_ENVIRONMENT
 - Configuration files now use .env format instead of appsettings.json
 
+## Cloudflare Tunnel Setup
+
+### Quick Setup with Token
+
+1. **Get Tunnel Token**: 
+   - Go to [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/)
+   - Navigate to Access → Tunnels → Create Tunnel
+   - Copy the tunnel token
+
+2. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env and set:
+   CLOUDFLARE_TUNNEL_ENABLED=true
+   CLOUDFLARE_TUNNEL_TOKEN=your_tunnel_token_here
+   ```
+
+3. **Start with Tunnel**:
+   ```bash
+   docker compose --profile tunnel up -d
+   ```
+
+### Advanced Setup with Configuration File
+
+1. **Create Tunnel Configuration**:
+   ```bash
+   # Edit tunnel-config.yml and update hostnames
+   # Replace 'your-domain.com' with your actual domain
+   ```
+
+2. **Use Custom Configuration**:
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile tunnel-custom up -d
+   ```
+
+### Tunnel Endpoints
+
+When using Cloudflare tunnel, your services will be accessible via:
+- **API**: `https://api.your-domain.com`
+- **Frontend**: `https://app.your-domain.com`
+- **MinIO Console**: `https://minio.your-domain.com` (optional)
+
 ## Contributing
 
 1. Use development environment for changes

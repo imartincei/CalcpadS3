@@ -69,6 +69,21 @@ services:
     environment:
       - API_BASE_URL=http://localhost:${API_PORT:-5000}
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: calcpad-cloudflared
+    profiles:
+      - tunnel
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - calcpad-api
+      - calcpad-viewer
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    networks:
+      - default
+
 volumes:
   minio-data:
     driver: local

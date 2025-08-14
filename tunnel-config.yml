@@ -1,0 +1,24 @@
+tunnel: calcpad-tunnel
+credentials-file: /root/.cloudflared/cert.pem
+
+ingress:
+  # API endpoint
+  - hostname: api.your-domain.com
+    service: http://calcpad-api:5000
+    originRequest:
+      httpHostHeader: api.your-domain.com
+  
+  # Frontend/Viewer endpoint  
+  - hostname: app.your-domain.com
+    service: http://calcpad-viewer:80
+    originRequest:
+      httpHostHeader: app.your-domain.com
+  
+  # MinIO Console (optional - for admin access)
+  - hostname: minio.your-domain.com
+    service: http://minio:9001
+    originRequest:
+      httpHostHeader: minio.your-domain.com
+  
+  # Catch-all rule (required)
+  - service: http_status:404

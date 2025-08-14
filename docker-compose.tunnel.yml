@@ -1,0 +1,23 @@
+# Alternative docker-compose override for custom tunnel configuration
+# Usage: docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up
+
+services:
+  cloudflared-custom:
+    image: cloudflare/cloudflared:latest
+    container_name: calcpad-cloudflared-custom
+    profiles:
+      - tunnel-custom
+    volumes:
+      - ./tunnel-config.yml:/etc/cloudflared/config.yml:ro
+      - cloudflared-data:/root/.cloudflared
+    command: tunnel --config /etc/cloudflared/config.yml run
+    depends_on:
+      - calcpad-api
+      - calcpad-viewer
+    restart: unless-stopped
+    networks:
+      - default
+
+volumes:
+  cloudflared-data:
+    driver: local
